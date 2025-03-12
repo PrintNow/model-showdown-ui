@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
+import { Modal } from './Modal';
 
 interface ConfigModalProps {
   isOpen: boolean;
@@ -6,7 +7,8 @@ interface ConfigModalProps {
   models: string[];
   baseApi: string;
   apiKey: string;
-  onSave: (models: string[], baseApi: string, apiKey: string) => void;
+  layout: number;
+  onSave: (models: string[], baseApi: string, apiKey: string, layout: number) => void;
 }
 
 export const ConfigModal: React.FC<ConfigModalProps> = ({
@@ -15,135 +17,178 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({
   models: initialModels,
   baseApi: initialBaseApi,
   apiKey: initialApiKey,
+  layout: initialLayout,
   onSave,
 }) => {
-  // 本地状态，用于编辑
-  const [localState, setLocalState] = useState({
-    baseApi: initialBaseApi,
-    apiKey: initialApiKey,
-    models: [...initialModels],
-    newModel: ''
-  });
-
-  // Modal 打开时重置状态
-  useEffect(() => {
-    if (isOpen) {
-      setLocalState({
-        baseApi: initialBaseApi,
-        apiKey: initialApiKey,
-        models: [...initialModels],
-        newModel: ''
-      });
-    }
-  }, [isOpen, initialBaseApi, initialApiKey, initialModels]);
+  const [models, setModels] = useState<string[]>(initialModels);
+  const [modelInput, setModelInput] = useState('');
+  const [baseApi, setBaseApi] = useState(initialBaseApi);
+  const [apiKey, setApiKey] = useState(initialApiKey);
+  const [layout, setLayout] = useState(initialLayout);
 
   const handleAddModel = () => {
-    const modelName = localState.newModel.trim();
-    if (modelName && !localState.models.includes(modelName)) {
-      setLocalState(prev => ({
-        ...prev,
-        models: [...prev.models, modelName],
-        newModel: ''
-      }));
+    if (modelInput.trim() && !models.includes(modelInput.trim())) {
+      setModels([...models, modelInput.trim()]);
+      setModelInput('');
     }
   };
 
   const handleRemoveModel = (model: string) => {
-    setLocalState(prev => ({
-      ...prev,
-      models: prev.models.filter(m => m !== model)
-    }));
+    setModels(models.filter((m) => m !== model));
   };
 
   const handleSave = () => {
-    const uniqueModels = Array.from(new Set(localState.models));
-    onSave(uniqueModels, localState.baseApi, localState.apiKey);
+    onSave(models, baseApi, apiKey, layout);
   };
 
-  if (!isOpen) return null;
-
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-      <div className="bg-white rounded-lg p-6 w-full max-w-md">
-        <h2 className="text-xl font-semibold mb-4">配置</h2>
-
-        {/* Base API */}
-        <div className="mb-4">
+    <Modal isOpen={isOpen} onClose={onClose} title="配置">
+      <div className="space-y-6">
+        {/* Base API 配置 */}
+        <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
-            Base API
+            Base API URL
           </label>
           <input
             type="text"
-            value={localState.baseApi}
-            onChange={(e) => setLocalState(prev => ({ ...prev, baseApi: e.target.value }))}
-            className="w-full p-2 border border-gray-300 rounded-md"
-            placeholder="输入 Base API 地址"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+            value={baseApi}
+            onChange={(e) => setBaseApi(e.target.value)}
+            placeholder="例如: https://api.example.com"
           />
         </div>
 
-        {/* API Key */}
-        <div className="mb-4">
+        {/* API Key 配置 */}
+        <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
             API Key
           </label>
           <input
             type="password"
-            value={localState.apiKey}
-            onChange={(e) => setLocalState(prev => ({ ...prev, apiKey: e.target.value }))}
-            className="w-full p-2 border border-gray-300 rounded-md"
-            placeholder="输入 API Key"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+            value={apiKey}
+            onChange={(e) => setApiKey(e.target.value)}
+            placeholder="您的 API Key"
           />
         </div>
 
-        {/* Models */}
-        <div className="mb-4">
+        {/* 布局配置 */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            栏目布局
+          </label>
+          <div className="flex space-x-4">
+            <button
+              type="button"
+              onClick={() => setLayout(2)}
+              className={`px-4 py-2 border rounded-md ${
+                layout === 2
+                  ? 'bg-blue-100 border-blue-500 text-blue-700'
+                  : 'border-gray-300 text-gray-700'
+              }`}
+            >
+              2 栏
+            </button>
+            <button
+              type="button"
+              onClick={() => setLayout(3)}
+              className={`px-4 py-2 border rounded-md ${
+                layout === 3
+                  ? 'bg-blue-100 border-blue-500 text-blue-700'
+                  : 'border-gray-300 text-gray-700'
+              }`}
+            >
+              3 栏
+            </button>
+            <button
+              type="button"
+              onClick={() => setLayout(4)}
+              className={`px-4 py-2 border rounded-md ${
+                layout === 4
+                  ? 'bg-blue-100 border-blue-500 text-blue-700'
+                  : 'border-gray-300 text-gray-700'
+              }`}
+            >
+              4 栏
+            </button>
+          </div>
+        </div>
+
+        {/* 模型配置 */}
+        <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
             模型列表
           </label>
-          <div className="flex gap-2 mb-2">
+          <div className="flex space-x-2 mb-2">
             <input
               type="text"
-              value={localState.newModel}
-              onChange={(e) => setLocalState(prev => ({ ...prev, newModel: e.target.value }))}
-              onKeyPress={(e) => e.key === 'Enter' && handleAddModel()}
-              className="flex-1 p-2 border border-gray-300 rounded-md"
+              className="flex-1 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+              value={modelInput}
+              onChange={(e) => setModelInput(e.target.value)}
               placeholder="输入模型名称"
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  handleAddModel();
+                }
+              }}
             />
             <button
+              type="button"
               onClick={handleAddModel}
-              disabled={!localState.newModel.trim()}
-              className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed"
+              className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
             >
               添加
             </button>
           </div>
-          <div className="space-y-2 max-h-48 overflow-y-auto">
-            {localState.models.map((model) => (
+
+          {/* 模型列表 */}
+          <div className="mt-2 space-y-2">
+            {models.map((model) => (
               <div
                 key={model}
-                className="flex items-center justify-between p-2 bg-gray-50 rounded-md"
+                className="flex items-center justify-between px-3 py-2 bg-gray-50 rounded-md"
               >
                 <span>{model}</span>
                 <button
+                  type="button"
                   onClick={() => handleRemoveModel(model)}
-                  className="text-red-500 hover:text-red-600"
+                  className="text-red-500 hover:text-red-700"
                 >
-                  删除
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-5 w-5"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
                 </button>
               </div>
             ))}
+            {models.length === 0 && (
+              <div className="text-center py-2 text-gray-500">
+                请添加至少一个模型
+              </div>
+            )}
           </div>
         </div>
 
-        {/* 按钮 */}
-        <div className="flex justify-end gap-2">
+        {/* 底部按钮 */}
+        <div className="flex justify-end space-x-2">
           <button
+            type="button"
             onClick={onClose}
-            className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50"
+            className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
           >
             取消
           </button>
           <button
+            type="button"
             onClick={handleSave}
             className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
           >
@@ -151,6 +196,6 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({
           </button>
         </div>
       </div>
-    </div>
+    </Modal>
   );
 }; 

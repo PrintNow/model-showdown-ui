@@ -43,6 +43,10 @@ export const ChatLayout: React.FC = () => {
   const [baseApi, setBaseApi] = useState(() => localStorage.getItem('baseApi') || '');
   const [apiKey, setApiKey] = useState(() => localStorage.getItem('apiKey') || '');
   const [messageIdCounter, setMessageIdCounter] = useState(0);
+  const [layout, setLayout] = useState<number>(() => {
+    const savedLayout = localStorage.getItem('layout');
+    return savedLayout ? parseInt(savedLayout) : 3;
+  });
 
   // 生成唯一消息 ID
   const generateMessageId = () => {
@@ -73,16 +77,18 @@ export const ChatLayout: React.FC = () => {
   }, [chats]);
 
   // 处理配置保存
-  const handleConfigSave = (newModels: string[], newBaseApi: string, newApiKey: string) => {
+  const handleConfigSave = (newModels: string[], newBaseApi: string, newApiKey: string, newLayout: number) => {
     // 保存到 localStorage
     localStorage.setItem('models', JSON.stringify(newModels));
     localStorage.setItem('baseApi', newBaseApi);
     localStorage.setItem('apiKey', newApiKey);
+    localStorage.setItem('layout', newLayout.toString());
     
     // 更新状态
     setModels(newModels);
     setBaseApi(newBaseApi);
     setApiKey(newApiKey);
+    setLayout(newLayout);
     setIsConfigOpen(false);
   };
 
@@ -340,7 +346,11 @@ export const ChatLayout: React.FC = () => {
           <>
             {/* 模型对比区域 */}
             <div className="flex-1 overflow-hidden">
-              <div className="h-full grid grid-cols-3 gap-4 p-4">
+              <div className={`h-full grid gap-4 p-4 ${
+                layout === 2 ? 'grid-cols-2' : 
+                layout === 3 ? 'grid-cols-3' : 
+                layout === 4 ? 'grid-cols-4' : 'grid-cols-3'
+              }`}>
                 {models.map((model) => (
                   <ModelCard
                     key={model}
@@ -409,6 +419,7 @@ export const ChatLayout: React.FC = () => {
         models={models}
         baseApi={baseApi}
         apiKey={apiKey}
+        layout={layout}
         onSave={handleConfigSave}
       />
 
