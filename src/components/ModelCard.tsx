@@ -2,6 +2,32 @@ import React, { useRef, useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
 import { Message } from './ChatLayout';
 
+// 创建一个全局事件总线用于跨组件通信
+export const scrollEventBus = {
+  listeners: new Map<string, Set<() => void>>(),
+  subscribe(messageId: string, callback: () => void) {
+    if (!this.listeners.has(messageId)) {
+      this.listeners.set(messageId, new Set());
+    }
+    this.listeners.get(messageId)?.add(callback);
+    return () => {
+      const callbacks = this.listeners.get(messageId);
+      if (callbacks) {
+        callbacks.delete(callback);
+        if (callbacks.size === 0) {
+          this.listeners.delete(messageId);
+        }
+      }
+    };
+  },
+  publish(messageId: string) {
+    const callbacks = this.listeners.get(messageId);
+    if (callbacks) {
+      callbacks.forEach(callback => callback());
+    }
+  }
+};
+
 interface ModelCardProps {
   model: string;
   messages: Message[];
@@ -9,14 +35,42 @@ interface ModelCardProps {
 
 export const ModelCard: React.FC<ModelCardProps> = ({ model, messages }) => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  // 为每个消息创建引用
+  const messageRefs = useRef<{[key: string]: HTMLDivElement | null}>({});
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
+  // 滚动到特定消息
+  const scrollToMessage = (messageId: string) => {
+    if (messageRefs.current[messageId]) {
+      messageRefs.current[messageId]?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  };
+
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
+
+  // 为每个消息注册滚动事件监听
+  useEffect(() => {
+    const unsubscribes = messages.map(message => 
+      scrollEventBus.subscribe(message.id, () => scrollToMessage(message.id))
+    );
+    
+    return () => {
+      unsubscribes.forEach(unsubscribe => unsubscribe());
+    };
+  }, [messages]);
+
+  // 处理消息点击事件
+  const handleMessageClick = (messageId: string, event: React.MouseEvent) => {
+    // 阻止事件冒泡，避免多次触发
+    event.stopPropagation();
+    // 通知所有订阅了该消息ID的组件
+    scrollEventBus.publish(messageId);
+  };
 
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 flex flex-col h-full overflow-hidden">
@@ -56,7 +110,11 @@ export const ModelCard: React.FC<ModelCardProps> = ({ model, messages }) => {
           const response = message.responses[model];
           const isLast = index === messages.length - 1;
           return (
-            <div key={message.id} className="relative pl-4">
+            <div 
+              key={message.id} 
+              className="relative pl-4" 
+              ref={el => messageRefs.current[message.id] = el}
+            >
               {/* 左侧时间线 */}
               <div className="absolute left-0 top-0 bottom-0 w-px bg-gray-200">
                 <div className="absolute top-4 left-1/2 w-2 h-2 rounded-full bg-gray-300 -translate-x-1/2" />
@@ -65,7 +123,10 @@ export const ModelCard: React.FC<ModelCardProps> = ({ model, messages }) => {
 
               <div className="space-y-2">
                 {/* 用户问题 */}
-                <div className="group relative bg-blue-50 p-3 rounded-lg border border-blue-100 text-gray-800 text-sm">
+                <div 
+                  className="group relative bg-blue-50 p-3 rounded-lg border border-blue-100 text-gray-800 text-sm cursor-pointer hover:bg-blue-100 transition-colors"
+                  onDoubleClick={(e) => handleMessageClick(message.id, e)}
+                >
                   <div className="flex items-center gap-2 mb-1 text-xs text-gray-500">
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
                       <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
@@ -93,11 +154,17 @@ export const ModelCard: React.FC<ModelCardProps> = ({ model, messages }) => {
                       <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-500"></div>
                     </div>
                   ) : response?.status === 'error' ? (
-                    <div className="text-red-500 p-3 bg-red-50 rounded-lg border border-red-100 text-sm">
+                    <div 
+                      className="text-red-500 p-3 bg-red-50 rounded-lg border border-red-100 text-sm cursor-pointer hover:bg-red-100 transition-colors"
+                      onClick={(e) => handleMessageClick(message.id, e)}
+                    >
                       {response.content || '请求失败，请重试'}
                     </div>
                   ) : (
-                    <div className="group relative rounded-lg bg-white border border-gray-200 shadow-sm">
+                    <div 
+                      className="group relative rounded-lg bg-white border border-gray-200 shadow-sm cursor-pointer hover:bg-gray-50 transition-colors"
+                      // onDoubleClick={(e) => handleMessageClick(message.id, e)}
+                    >
                       <div className="p-3 text-sm">
                         <div className="prose prose-sm max-w-none prose-p:my-1 prose-pre:my-1">
                           <ReactMarkdown>{response?.content || ''}</ReactMarkdown>
