@@ -47,6 +47,17 @@ export const ChatLayout: React.FC = () => {
     const savedLayout = localStorage.getItem('layout');
     return savedLayout ? parseInt(savedLayout) : 3;
   });
+  const [sidebarCollapsed, setSidebarCollapsed] = useState<boolean>(() => {
+    const savedState = localStorage.getItem('sidebarCollapsed');
+    return savedState ? JSON.parse(savedState) : false;
+  });
+
+  // 切换侧边栏状态
+  const toggleSidebar = () => {
+    const newState = !sidebarCollapsed;
+    setSidebarCollapsed(newState);
+    localStorage.setItem('sidebarCollapsed', JSON.stringify(newState));
+  };
 
   // 生成唯一消息 ID
   const generateMessageId = () => {
@@ -294,13 +305,15 @@ export const ChatLayout: React.FC = () => {
   return (
     <div className="h-screen flex bg-gray-50">
       {/* 左侧会话列表 */}
-      <div className="w-64 border-r border-gray-200 bg-white">
+      <div className={`${sidebarCollapsed ? 'w-16' : 'w-64'} border-r border-gray-200 bg-white transition-all duration-300 ease-in-out flex-shrink-0`}>
         <ChatSidebar 
           chats={chats}
           activeChat={activeChat}
           onSelectChat={setActiveChat}
           onNewChat={handleNewChat}
           onDeleteChat={handleDeleteChat}
+          collapsed={sidebarCollapsed}
+          onToggleCollapse={toggleSidebar}
         />
       </div>
 
@@ -349,7 +362,9 @@ export const ChatLayout: React.FC = () => {
               <div className={`h-full grid gap-4 p-4 ${
                 layout === 2 ? 'grid-cols-2' : 
                 layout === 3 ? 'grid-cols-3' : 
-                layout === 4 ? 'grid-cols-4' : 'grid-cols-3'
+                layout === 4 ? 'grid-cols-4' : 
+                layout === 5 ? 'grid-cols-5' : 
+                layout === 6 ? 'grid-cols-6' : 'grid-cols-3'
               }`}>
                 {models.map((model) => (
                   <ModelCard

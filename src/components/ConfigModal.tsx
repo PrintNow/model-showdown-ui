@@ -77,7 +77,7 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({
           <label className="block text-sm font-medium text-gray-700 mb-2">
             栏目布局
           </label>
-          <div className="flex space-x-4">
+          <div className="flex flex-wrap gap-2">
             <button
               type="button"
               onClick={() => setLayout(2)}
@@ -110,6 +110,28 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({
               }`}
             >
               4 栏
+            </button>
+            <button
+              type="button"
+              onClick={() => setLayout(5)}
+              className={`px-4 py-2 border rounded-md ${
+                layout === 5
+                  ? 'bg-blue-100 border-blue-500 text-blue-700'
+                  : 'border-gray-300 text-gray-700'
+              }`}
+            >
+              5 栏
+            </button>
+            <button
+              type="button"
+              onClick={() => setLayout(6)}
+              className={`px-4 py-2 border rounded-md ${
+                layout === 6
+                  ? 'bg-blue-100 border-blue-500 text-blue-700'
+                  : 'border-gray-300 text-gray-700'
+              }`}
+            >
+              6 栏
             </button>
           </div>
         </div>
