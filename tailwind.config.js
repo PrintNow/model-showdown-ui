@@ -1,8 +1,7 @@
 /** @type {import('tailwindcss').Config} */
-export default {
+module.exports = {
   content: [
-    "./index.html",
-    "./src/**/*.{js,ts,jsx,tsx}",
+    "./src/**/*.{js,jsx,ts,tsx}",
   ],
   theme: {
     extend: {
@@ -34,5 +33,26 @@ export default {
       },
     },
   },
-  plugins: [],
+  plugins: [
+    require('@tailwindcss/typography'),
+    function({ addBase, theme }) {
+      addBase({
+        // 全局滚动条样式
+        '*::-webkit-scrollbar': {
+          width: '0.375rem', // 6px
+          height: '0.375rem',
+        },
+        '*::-webkit-scrollbar-track': {
+          backgroundColor: 'transparent',
+        },
+        '*::-webkit-scrollbar-thumb': {
+          backgroundColor: theme('colors.gray.300'),
+          borderRadius: '9999px',
+        },
+        '*::-webkit-scrollbar-thumb:hover': {
+          backgroundColor: theme('colors.gray.400'),
+        },
+      });
+    },
+  ],
 } 

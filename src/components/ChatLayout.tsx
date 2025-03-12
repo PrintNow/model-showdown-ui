@@ -377,7 +377,7 @@ export const ChatLayout: React.FC = () => {
             </div>
 
             {/* 底部输入框 */}
-            <div className="border-t border-gray-200 p-4">
+            <div className="border-t border-gray-200 p-4 py-2">
               <ChatInput onSend={handleSend} />
             </div>
           </>

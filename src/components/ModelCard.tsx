@@ -51,7 +51,7 @@ export const ModelCard: React.FC<ModelCardProps> = ({ model, messages }) => {
       </div>
 
       {/* 消息列表 */}
-      <div className="flex-1 overflow-y-auto p-2 space-y-4 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:bg-gray-300 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-track]:bg-transparent hover:[&::-webkit-scrollbar-thumb]:bg-gray-400">
+      <div className="flex-1 overflow-y-auto p-2 space-y-4">
         {messages.map((message, index) => {
           const response = message.responses[model];
           const isLast = index === messages.length - 1;
