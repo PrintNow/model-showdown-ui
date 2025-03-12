@@ -1,0 +1,2 @@
+/assets/*
+    Cache-Control: public, max-age=63072000, s-maxage=63072000
