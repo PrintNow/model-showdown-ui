@@ -1,10 +1,14 @@
 # LLM 对比测试平台 | model-showdown-ui
 
+> [!IMPORTANT]
+> 目前仍然在开发阶段，不保证稳定性。
+
 一个用于比较多个大型语言模型（LLM）性能和响应质量的 React 应用程序。该平台允许用户同时向多个 LLM 发送相同的提示，并在并排视图中比较它们的响应。
 
-后端 API 请使用这个项目：https://github.com/PrintNow/one-api
-
-做了一些特殊改动，Docker 镜像为：`shine09/one-api:latest`
+> [!TIP]
+> 后端 API 请使用这个项目：https://github.com/PrintNow/one-api
+>
+> 因为配合本项目做了一些特殊改动，Docker 镜像为：`shine09/one-api:latest`
 
 ## 功能特性
 
