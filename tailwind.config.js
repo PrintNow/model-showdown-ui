@@ -39,8 +39,8 @@ module.exports = {
       addBase({
         // 全局滚动条样式
         '*::-webkit-scrollbar': {
-          width: '0.375rem', // 6px
-          height: '0.375rem',
+          width: '0.1875rem', // 3px，原来的一半
+          height: '0.1875rem',
         },
         '*::-webkit-scrollbar-track': {
           backgroundColor: 'transparent',
@@ -51,6 +51,22 @@ module.exports = {
         },
         '*::-webkit-scrollbar-thumb:hover': {
           backgroundColor: theme('colors.gray.400'),
+        },
+        // 当没有滚动内容时隐藏滚动条
+        '*::-webkit-scrollbar-thumb:vertical': {
+          minHeight: '30px',
+          'background-clip': 'content-box',
+        },
+        '*::-webkit-scrollbar-thumb:horizontal': {
+          minWidth: '30px',
+          'background-clip': 'content-box',
+        },
+        // 当内容不需要滚动时隐藏滚动条
+        '*:not(:hover)::-webkit-scrollbar-thumb': {
+          backgroundColor: 'transparent',
+        },
+        '*::-webkit-scrollbar-corner': {
+          backgroundColor: 'transparent',
         },
       });
     },

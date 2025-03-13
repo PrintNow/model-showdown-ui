@@ -72,6 +72,13 @@ export const ModelCard: React.FC<ModelCardProps> = ({ model, messages }) => {
     scrollEventBus.publish(messageId);
   };
 
+  // 复制回答内容
+  const handleCopyResponse = (content: string, event: React.MouseEvent) => {
+    event.stopPropagation();
+    navigator.clipboard.writeText(content);
+    // 可以添加复制成功的提示
+  };
+
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 flex flex-col h-full overflow-hidden">
       {/* 模型标题 */}
@@ -105,84 +112,73 @@ export const ModelCard: React.FC<ModelCardProps> = ({ model, messages }) => {
       </div>
 
       {/* 消息列表 */}
-      <div className="flex-1 overflow-y-auto p-2 space-y-4">
+      <div className="flex-1 overflow-y-auto p-2 py-0 pt-4 space-y-0">
         {messages.map((message, index) => {
           const response = message.responses[model];
           const isLast = index === messages.length - 1;
           return (
-            <div 
-              key={message.id} 
-              className="relative pl-4" 
-              ref={el => messageRefs.current[message.id] = el}
-            >
-              {/* 左侧时间线 */}
-              <div className="absolute left-0 top-0 bottom-0 w-px bg-gray-200">
-                <div className="absolute top-4 left-1/2 w-2 h-2 rounded-full bg-gray-300 -translate-x-1/2" />
-                {!isLast && <div className="absolute top-4 left-1/2 w-px h-full bg-gray-200 -translate-x-1/2" />}
-              </div>
-
-              <div className="space-y-2">
+            <div key={message.id} className="relative">
+              {/* 消息卡片 */}
+              <div 
+                className="conversation-turn bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden transition-all duration-300 hover:shadow-md hover:-translate-y-0.5 mb-5"
+                ref={el => messageRefs.current[message.id] = el}
+              >
                 {/* 用户问题 */}
-                <div 
-                  className="group relative bg-blue-50 p-3 rounded-lg border border-blue-100 text-gray-800 text-sm cursor-pointer hover:bg-blue-100 transition-colors"
-                  onDoubleClick={(e) => handleMessageClick(message.id, e)}
-                >
-                  <div className="flex items-center gap-2 mb-1 text-xs text-gray-500">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-                      <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
-                    </svg>
-                    用户
-                    <span className="text-gray-400">#{messages.length - index}</span>
-                  </div>
-                  <ReactMarkdown>{message.content}</ReactMarkdown>
-                  <div className="absolute right-2 top-2 opacity-0 group-hover:opacity-100 transition-opacity text-xs text-gray-400">
-                    {new Date(message.timestamp).toLocaleTimeString()}
+                <div className="border-b border-blue-100 p-2 relative" style={{backgroundColor: `#f9fbff`}}>
+                  <div className="text-gray-800 text-sm whitespace-pre-wrap"
+                      onDoubleClick={(e) => handleMessageClick(message.id, e)}>
+                    <ReactMarkdown>{message.content}</ReactMarkdown>
                   </div>
                 </div>
 
                 {/* LLM 回答 */}
-                <div className="relative">
-                  <div className="flex items-center gap-2 mb-1 text-xs text-gray-500">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-                      <path d="M2 10a8 8 0 018-8v8h8a8 8 0 11-16 0z" />
-                      <path d="M12 2.252A8.014 8.014 0 0117.748 8H12V2.252z" />
-                    </svg>
-                    {model}
-                  </div>
+                <div className="relative bg-white p-2 border-l-2">
                   {response?.status === 'loading' ? (
-                    <div className="flex items-center justify-center py-3">
-                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-500"></div>
+                    <div className="flex items-center justify-center py-6">
+                      <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500"></div>
                     </div>
                   ) : response?.status === 'error' ? (
-                    <div 
-                      className="text-red-500 p-3 bg-red-50 rounded-lg border border-red-100 text-sm cursor-pointer hover:bg-red-100 transition-colors"
-                      onClick={(e) => handleMessageClick(message.id, e)}
-                    >
+                    <div className="text-red-500 p-4 bg-red-50 rounded-lg border border-red-100 text-sm">
                       {response.content || '请求失败，请重试'}
                     </div>
                   ) : (
-                    <div 
-                      className="group relative rounded-lg bg-white border border-gray-200 shadow-sm cursor-pointer hover:bg-gray-50 transition-colors"
-                      // onDoubleClick={(e) => handleMessageClick(message.id, e)}
-                    >
-                      <div className="p-3 text-sm">
-                        <div className="prose prose-sm max-w-none prose-p:my-1 prose-pre:my-1">
-                          <ReactMarkdown>{response?.content || ''}</ReactMarkdown>
-                        </div>
+                    <>
+                      <div className="text-gray-800 text-sm">
+                        <ReactMarkdown>{response?.content || ''}</ReactMarkdown>
                       </div>
+                      
                       {response?.responseTime != null && response?.totalTokens != null && (
-                        <div className="px-3 py-2 border-t border-gray-100 text-xs text-gray-500 flex items-center gap-2 bg-gray-50 rounded-b-lg">
-                          <span title="响应时间">⏱️ {(response.responseTime / 1000).toFixed(2)}s</span>
-                          <span title="Token 使用量">🔤 {response.totalTokens} tokens</span>
+                        <div className="mt-2 pt-1 border-t border-gray-100 text-xs text-gray-500 flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <span title="响应时间" className="flex items-center">
+                              <span className="mr-1">⏱️</span> {(response.responseTime / 1000).toFixed(2)}s
+                            </span>
+                            <span title="Token 使用量" className="flex items-center">
+                              <span className="mr-1">🔤</span> {response.totalTokens}
+                            </span>
+                          </div>
+                          <button 
+                            className="flex items-center gap-1 bg-gray-100 hover:bg-gray-200 text-gray-600 px-2 py-1 rounded-full transition-colors"
+                            // onClick={(e) => handleCopyResponse(response.content, e)}
+                          >
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" viewBox="0 0 20 20" fill="currentColor">
+                              <path d="M8 3a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z" />
+                              <path d="M6 3a2 2 0 00-2 2v11a2 2 0 002 2h8a2 2 0 002-2V5a2 2 0 00-2-2 3 3 0 01-3 3H9a3 3 0 01-3-3z" />
+                            </svg>
+                          </button>
                         </div>
                       )}
-                      <div className="absolute right-2 top-2 opacity-0 group-hover:opacity-100 transition-opacity text-xs text-gray-400">
-                        {new Date(message.timestamp + (response?.responseTime || 0)).toLocaleTimeString()}
-                      </div>
-                    </div>
+                    </>
                   )}
                 </div>
               </div>
+              
+              {/* 分割线 */}
+              {!isLast && (
+                <div className="flex justify-center items-center mb-5">
+                  <div className="w-8 h-px bg-gray-300"></div>
+                </div>
+              )}
             </div>
           );
         })}
