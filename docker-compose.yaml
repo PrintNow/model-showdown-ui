@@ -1,0 +1,16 @@
+version: "3.7"
+
+services:
+  app:
+    image: shine09/llm-composer:latest
+    restart: unless-stopped
+    ports:
+      - "3649:80"
+  one-api:
+    image: shine09/one-api:latest
+    # 注意，初始账号/密码为：root / 123456
+    restart: unless-stopped
+    volumes:
+      - ./one-api:/data
+    ports:
+      - "3001:3000"
