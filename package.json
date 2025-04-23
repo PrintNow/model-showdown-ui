@@ -1,6 +1,5 @@
 {
-  "name": "model-showdown-ui",
-  "private": true,
+  "name": "llm-compare",
   "version": "0.1.0",
   "type": "module",
   "scripts": {
