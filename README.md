@@ -16,6 +16,38 @@
 |---------------------------------|-------------------------------------|-------------------------------------------|
 | ![首页截图](./screenshots/home.png) | ![配置截图截图](./screenshots/config.png) | ![系统提示词截图](screenshots/system_prompt.png) |
 
+## 技术栈
+
+- Node >= 18
+- React 18
+- TypeScript
+- Tailwind CSS
+
+## 快速使用
+
+在使用本项目前，你需要了解并熟悉 [one-api](https://github.com/songquanpeng/one-api) 项目的使用，one-api 是 LLM API 管理 &
+分发系统，可以统一 LLM 调用入口，方便使用不同平台（如 OpenAI、Grok、Gemini、阿里百炼等）的 LLM。
+具体使用方法请看文档：https://github.com/songquanpeng/one-api#%E4%BD%BF%E7%94%A8%E6%96%B9%E6%B3%95
+
+### 方式一、直接运行前端
+
+如果你想直接跑起前端项目，可以直接使用本项目 Docker 镜像：`shine09/llm-composer:latest`
+
+### 方式二、使用 docker-compose
+
+本项目也提供 `docker-compose.yaml` 包含 one-api 和本项目前端，开箱即用：
+
+```shell
+# 启动
+docker compose up -d
+
+# 查看运行状态
+docker compose ps
+```
+
+* 前端：http://localhost:3649
+* 后端：http://localhost:3000  (需要做出一些配置，初始账号/密码为：`root` / `123456`)
+
 ## 功能特性
 
 ### 核心功能
@@ -41,7 +73,7 @@
 - **自适应布局**：响应式设计，适应不同屏幕尺寸
 - **优化的滚动体验**：自定义滚动条和平滑滚动效果
 
-## 快速开始
+## 自定义开发
 
 ### 安装依赖
 
@@ -91,16 +123,8 @@ npm run build
     - 使用"清空对话"按钮清除当前会话的消息
     - 点击会话旁的删除图标删除会话
 
-## 技术栈
-
-- Node >= 18
-- React 18
-- TypeScript
-- Tailwind CSS
-
 ## 注意事项
 
-- 需要有效的 OpenAI API 密钥或兼容的 API 端点
 - 支持任何兼容 OpenAI API 格式的服务，如 Azure OpenAI、One API 等
 - 响应时间计算优先使用 `x-one-api-upstream-time` 响应头
 
